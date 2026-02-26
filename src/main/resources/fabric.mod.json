@@ -1,0 +1,26 @@
+{
+	"schemaVersion": 1,
+	"id": "skyblock-macro",
+	"version": "${version}",
+	"name": "Skyblock Macro",
+	"description": "Macro for Hypixel Skyblock Commissions",
+	"authors": [
+		"Jules"
+	],
+	"contact": {},
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+			"com.example.macro.MacroClient"
+		]
+	},
+	"mixins": [
+		"skyblock-macro.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"minecraft": "~1.21.10",
+		"java": ">=21"
+	}
+}
