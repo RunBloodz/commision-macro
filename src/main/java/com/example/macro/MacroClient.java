@@ -20,6 +20,7 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
     private static int tickCounter = 0;
     private static int pauseTicks = 0;
     private static final Random random = new Random();
+    private static BlockPos currentMiningTarget = null;
 
     @Override
     public void onInitializeClient() {
@@ -71,38 +72,43 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
                 if (anyDone) {
                     currentState = State.CLAIMING;
                     calculatePath(client, MacroConfig.kingPos);
+                    return;
+                }
+
+                // 1. Find nearest block of interest
+                BlockPos nearestBlock = WorldScanner.findNearest(client.player.blockPosition(), 30, MiningHandler::isTargetBlock);
+
+                if (nearestBlock != null) {
+                    currentMiningTarget = nearestBlock;
+                    calculatePath(client, nearestBlock);
+                    currentState = State.TRAVELLING;
                 } else {
+                    // No blocks nearby, go to configured zone
                     String commission = commissions.isEmpty() ? "" : commissions.get(0);
-                    BlockPos pos = decideLocation(commission);
-                    if (pos != null) {
-                        calculatePath(client, pos);
-                        currentState = State.TRAVELLING;
-                    } else {
-                        // Fallback if no specific area found
-                        calculatePath(client, MacroConfig.currentTarget);
-                        currentState = State.TRAVELLING;
-                    }
+                    BlockPos zonePos = decideLocation(commission);
+                    calculatePath(client, zonePos);
+                    currentState = State.TRAVELLING;
                 }
                 break;
             case TRAVELLING:
                 if (currentPath != null && !currentPath.isEmpty()) {
                     BlockPos target = currentPath.get(currentPath.size() - 1);
                     if (client.player.blockPosition().distManhattan(target) < 4) {
-                        startPause(State.MINING, random.nextInt(40) + 20);
+                        currentState = State.MINING;
                     }
                 } else {
                     currentState = State.SCANNING;
                 }
                 break;
             case MINING:
-                // Periodically check if done or if there's Titanium nearby
-                if (tickCounter % 200 == 0) {
+                // If target block is gone or distance > 5, rescan
+                if (currentMiningTarget == null || !MiningHandler.isTargetBlock(client.level.getBlockState(currentMiningTarget))
+                    || client.player.blockPosition().distSqr(currentMiningTarget) > 25) {
                     currentState = State.SCANNING;
                 }
                 break;
             case CLAIMING:
                 if (client.player.blockPosition().distManhattan(MacroConfig.kingPos) < 4) {
-                    // Right click simulation logic would go here
                     startPause(State.SCANNING, 100);
                 }
                 break;
@@ -128,12 +134,12 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
         double dx = targetVec.x - client.player.getX();
         double dz = targetVec.z - client.player.getZ();
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-        rotation.setTarget(yaw + (random.nextFloat() - 0.5f) * 3, 0);
+        rotation.setTarget(yaw + (random.nextFloat() - 0.5f) * 2, 0);
 
         Options options = client.options;
         options.keyUp.setDown(true);
 
-        if (client.player.blockPosition().distSqr(next) < 2.2) {
+        if (client.player.blockPosition().distSqr(next) < 1.5) {
             pathIndex++;
             if (pathIndex >= currentPath.size()) {
                 options.keyUp.setDown(false);
@@ -142,25 +148,24 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
 
         if (client.player.horizontalCollision) {
             options.keyJump.setDown(true);
-        } else if (random.nextInt(100) == 0) {
-             options.keyJump.setDown(false);
+        } else {
+            options.keyJump.setDown(false);
         }
     }
 
     private static void handleMining(Minecraft client) {
-        BlockPos nearest = MiningHandler.findNearestTarget(client.player.blockPosition(), 5);
-        if (nearest != null) {
-            lookAt(Vec3.atCenterOf(nearest), client);
+        if (currentMiningTarget == null) {
+            currentState = State.SCANNING;
+            return;
+        }
 
-            if (!rotation.isActive()) {
-                if (client.gameMode != null) {
-                    client.gameMode.continueDestroyBlock(nearest, Direction.UP);
-                    client.player.swing(InteractionHand.MAIN_HAND);
-                }
+        lookAt(Vec3.atCenterOf(currentMiningTarget), client);
+
+        if (!rotation.isActive()) {
+            if (client.gameMode != null) {
+                client.gameMode.continueDestroyBlock(currentMiningTarget, Direction.UP);
+                client.player.swing(InteractionHand.MAIN_HAND);
             }
-        } else {
-            // No blocks found, move slightly or scan
-            if (random.nextInt(50) == 0) currentState = State.SCANNING;
         }
     }
 
@@ -172,7 +177,7 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
 
     private static void calculatePath(Minecraft client, BlockPos target) {
         if (target == null) return;
-        currentPath = Pathfinder.findPath(client.player.blockPosition(), target, client.level, 2500);
+        currentPath = Pathfinder.findPath(client.player.blockPosition(), target, client.level, 3000);
         pathIndex = 0;
     }
 
@@ -182,9 +187,6 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
                 return MacroConfig.LOCATIONS.get(area);
             }
         }
-        if (commission.contains("Mithril") || commission.contains("Titanium")) {
-            return MacroConfig.currentTarget;
-        }
-        return null;
+        return MacroConfig.currentTarget;
     }
 }
