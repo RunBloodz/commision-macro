@@ -66,7 +66,7 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
                 break;
             case SCANNING:
                 List<String> commissions = TabListParser.getCommissions();
-                boolean anyDone = commissions.stream().anyMatch(c -> c.contains("100%"));
+                boolean anyDone = commissions.stream().anyMatch(c -> c.contains("100%") || c.contains("DONE"));
 
                 if (anyDone) {
                     currentState = State.CLAIMING;
@@ -74,33 +74,36 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
                 } else {
                     String commission = commissions.isEmpty() ? "" : commissions.get(0);
                     BlockPos pos = decideLocation(commission);
-                    calculatePath(client, pos);
-                    currentState = State.TRAVELLING;
+                    if (pos != null) {
+                        calculatePath(client, pos);
+                        currentState = State.TRAVELLING;
+                    } else {
+                        // Fallback if no specific area found
+                        calculatePath(client, MacroConfig.currentTarget);
+                        currentState = State.TRAVELLING;
+                    }
                 }
                 break;
             case TRAVELLING:
                 if (currentPath != null && !currentPath.isEmpty()) {
                     BlockPos target = currentPath.get(currentPath.size() - 1);
-                    if (client.player.blockPosition().distManhattan(target) < 3) {
+                    if (client.player.blockPosition().distManhattan(target) < 4) {
                         startPause(State.MINING, random.nextInt(40) + 20);
                     }
+                } else {
+                    currentState = State.SCANNING;
                 }
                 break;
             case MINING:
-                if (tickCounter % 400 == 0) {
+                // Periodically check if done or if there's Titanium nearby
+                if (tickCounter % 200 == 0) {
                     currentState = State.SCANNING;
                 }
                 break;
             case CLAIMING:
                 if (client.player.blockPosition().distManhattan(MacroConfig.kingPos) < 4) {
-                    // Look at king and right click (Simulated)
-                    Vec3 kingVec = Vec3.atCenterOf(MacroConfig.kingPos);
-                    lookAt(kingVec, client);
-                    if (!rotation.isActive()) {
-                        // client.gameMode.interactEntity(...) // Requires entity lookup
-                        // For now, just wait
-                        startPause(State.SCANNING, 100);
-                    }
+                    // Right click simulation logic would go here
+                    startPause(State.SCANNING, 100);
                 }
                 break;
         }
@@ -125,12 +128,12 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
         double dx = targetVec.x - client.player.getX();
         double dz = targetVec.z - client.player.getZ();
         float yaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
-        rotation.setTarget(yaw + (random.nextFloat() - 0.5f) * 2, 0);
+        rotation.setTarget(yaw + (random.nextFloat() - 0.5f) * 3, 0);
 
         Options options = client.options;
         options.keyUp.setDown(true);
 
-        if (client.player.blockPosition().distSqr(next) < 2.0) {
+        if (client.player.blockPosition().distSqr(next) < 2.2) {
             pathIndex++;
             if (pathIndex >= currentPath.size()) {
                 options.keyUp.setDown(false);
@@ -139,8 +142,8 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
 
         if (client.player.horizontalCollision) {
             options.keyJump.setDown(true);
-        } else {
-            options.keyJump.setDown(false);
+        } else if (random.nextInt(100) == 0) {
+             options.keyJump.setDown(false);
         }
     }
 
@@ -156,8 +159,8 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
                 }
             }
         } else {
-            // Wait or move slightly
-            if (random.nextInt(100) == 0) currentState = State.SCANNING;
+            // No blocks found, move slightly or scan
+            if (random.nextInt(50) == 0) currentState = State.SCANNING;
         }
     }
 
@@ -169,13 +172,19 @@ public class MacroClient implements net.fabricmc.api.ClientModInitializer {
 
     private static void calculatePath(Minecraft client, BlockPos target) {
         if (target == null) return;
-        currentPath = Pathfinder.findPath(client.player.blockPosition(), target, client.level, 2000);
+        currentPath = Pathfinder.findPath(client.player.blockPosition(), target, client.level, 2500);
         pathIndex = 0;
     }
 
     private static BlockPos decideLocation(String commission) {
-        if (commission.contains("Mithril")) return MacroConfig.upperMinesPos;
-        if (commission.contains("Titanium")) return MacroConfig.royalMinesPos;
-        return MacroConfig.currentTarget;
+        for (String area : MacroConfig.LOCATIONS.keySet()) {
+            if (commission.toLowerCase().contains(area.toLowerCase().replace("'s", ""))) {
+                return MacroConfig.LOCATIONS.get(area);
+            }
+        }
+        if (commission.contains("Mithril") || commission.contains("Titanium")) {
+            return MacroConfig.currentTarget;
+        }
+        return null;
     }
 }

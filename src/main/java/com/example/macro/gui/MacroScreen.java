@@ -25,10 +25,10 @@ public class MacroScreen extends Screen {
         this.addRenderableWidget(Button.builder(Component.literal("Target: " + MacroConfig.currentArea), button -> {
             if (MacroConfig.currentArea.equals("Upper Mines")) {
                 MacroConfig.currentArea = "Royal Mines";
-                MacroConfig.currentTarget = MacroConfig.royalMinesPos;
+                MacroConfig.currentTarget = MacroConfig.LOCATIONS.get("Royal Mines");
             } else {
                 MacroConfig.currentArea = "Upper Mines";
-                MacroConfig.currentTarget = MacroConfig.upperMinesPos;
+                MacroConfig.currentTarget = MacroConfig.LOCATIONS.get("Upper Mines");
             }
             button.setMessage(Component.literal("Target: " + MacroConfig.currentArea));
         }).bounds(this.width / 2 - buttonWidth / 2, 60 + spacing, buttonWidth, buttonHeight).build());

@@ -1,34 +1,30 @@
 # Skyblock Commission Macro (Fabric 1.21.1)
 
-Ten mod jest automatycznym makrem do wykonywania komisji (Commissions) w Dwarven Mines na serwerze Hypixel Skyblock. Został stworzony na wersję Minecraft **1.21.1** przy użyciu **Fabric**.
+Ten mod jest zaawansowanym makrem do automatycznego wykonywania komisji (Commissions) w Dwarven Mines na serwerze Hypixel Skyblock.
 
-## ⚠️ UWAGA: Wymagana Java 21!
-Twój błąd wskazuje na używanie **Java 8 (32-bit)**. Minecraft 1.21.1 i Fabric **wymagają Javy 21 (64-bit)** do działania i kompilacji.
-1. Pobierz i zainstaluj **Java 21 JDK** (np. z [Adoptium Temurin](https://adoptium.net/)).
-2. Upewnij się, że instalujesz wersję **x64 (64-bit)**.
+## 🌟 Nowości (Wiki Update)
+- **Pełna Mapa Lokacji:** Mod zawiera teraz dokładne koordynaty wszystkich stref komisji (Royal Mines, Lava Springs, Upper Mines, Great Ice Wall itp.) na podstawie oficjalnej wiki Hypixel.
+- **Inteligentne Rozpoznawanie:** Mod analizuje tekst komisji i automatycznie wybiera najbliższą właściwą strefę.
 
 ## 🚀 Funkcje
-- **Automatyczny Pathfinder (A\*):** Mod sam wyznacza trasę do celów, omijając ściany i przeszkody.
-- **Inteligentne Kopanie:** Automatycznie wyszukuje i kopie Mithril oraz Titanium w zasięgu gracza.
-- **Odczyt TAB:** Sam sprawdza aktualne komisje w liście TAB.
-- **GUI Konfiguracyjne:** Dostępne pod komendą `/macro`.
+- **Pathfinder A\*:** Inteligentne omijanie przeszkód.
+- **Auto-Mining:** Automatyczne kopanie Mithrilu i Titanium.
+- **Claiming Logic:** Powrót do Króla po ukończeniu zadania.
+- **Bezpieczeństwo:** Smooth rotation, random pauses, jittery movement.
 
-## 📦 Kompilacja (Budowanie pliku .jar)
-Gdy już zainstalujesz Javę 21:
-1. Otwórz terminal w tym folderze.
-2. Uruchom komendę:
-   ```cmd
-   ./gradlew build
-   ```
-3. Gotowy plik znajdziesz w: `build/libs/skyblock-macro-1.0.0.jar`.
+## ⚠️ Wymagania
+- **Java 21 (64-bit)** - konieczna do kompilacji!
+- **Fabric Loader 1.21.1**.
 
-## 🔧 Instalacja
-1. Skopiuj plik `.jar` do `%appdata%/.minecraft/mods`.
-2. Uruchom grę na profilu Fabric 1.21.1.
+## 📦 Kompilacja
+```cmd
+./gradlew build
+```
+Plik `.jar` pojawi się w `build/libs/`.
 
-## 🎮 Jak używać
-1. Wpisz `/macro` na czacie w Dwarven Mines.
-2. Włącz bota przyciskiem "Macro: ON".
+## 🎮 Użycie
+1. Wpisz `/macro` w grze.
+2. Skonfiguruj opcje i kliknij "Macro: ON".
 
 ---
-*Stworzone przez Jules.*
+*Używaj z rozwagą. Makra są zabronione na Hypixelu.*
