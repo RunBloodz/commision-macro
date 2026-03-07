@@ -1,27 +1,22 @@
 # Skyblock Commission Macro (Fabric 1.21.1)
 
-Ten mod jest zaawansowanym makrem do automatycznego wykonywania komisji (Commissions) w Dwarven Mines na serwerze Hypixel Skyblock.
+Mod do automatyzacji komisji na Hypixel Skyblock.
 
-## 🚀 Szybka Kompilacja (Najłatwiejsza metoda)
-Przygotowałem skrypty, które zrobią wszystko za Ciebie:
-- **Windows:** Kliknij dwukrotnie plik `kompiluj.bat`.
-- **Linux/macOS:** Uruchom `bash kompiluj.sh`.
+## 🚀 Jak zbudować (Poprawiona metoda)
+Twój komputer ma problem ze znalezieniem Javy 21. Zrobiłem nowy skrypt, który sam jej poszuka:
 
-Po zakończeniu, Twój plik mod będzie gotowy tutaj: `build/libs/SkyblockMacro.jar`.
+1.  Upewnij się, że masz zainstalowaną **Jave 21 JDK (x64)** z [adoptium.net](https://adoptium.net/temurin/releases/?version=21).
+2.  Kliknij prawym przyciskiem na folder i wybierz "Otwórz w terminalu" (lub po prostu otwórz folder).
+3.  Uruchom plik **`kompiluj.bat`**.
 
-## ⚠️ Wymagania
-- **Java 21 (64-bit)** - konieczna do kompilacji i działania! Jeśli masz starszą wersję (np. 8), pobierz nową stąd: [Adoptium.net](https://adoptium.net/temurin/releases/?version=21).
+### Jeśli nadal masz błąd "javaHome seems to be invalid":
+To oznacza, że Gradle zapamiętał starą, błędną ścieżkę do Javy. Mój nowy skrypt `kompiluj.bat` spróbuje to naprawić, usuwając folder `.gradle` przed budowaniem.
 
 ## 🌟 Funkcje
-- **World Scanner:** Mod czyta dane z Minecrafta i sam znajduje najbliższe bloki Mithrilu/Titanium.
-- **Automatyczny Pathfinder:** Inteligentne omijanie ścian i przeszkód.
-- **Auto-Mining & Claiming:** Sam kopie i wraca do Króla po nagrody.
-- **Bezpieczeństwo:** Płynne ruchy kamery i losowe przerwy.
-
-## 🎮 Użycie
-1. Wrzuć `SkyblockMacro.jar` do folderu `mods`.
-2. Wpisz `/macro` na serwerze Hypixel (w Dwarven Mines).
-3. Kliknij "Macro: ON".
+- Skanowanie świata w poszukiwaniu Mithrilu.
+- Pathfinder A* do omijania ścian.
+- Automatyczne oddawanie komisji u Króla.
+- Menu pod komendą `/macro`.
 
 ---
-*Używaj z rozwagą. Każde makro wiąże się z ryzykiem bana.*
+*Używaj z głową.*
